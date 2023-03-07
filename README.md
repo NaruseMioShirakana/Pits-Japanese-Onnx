@@ -13,6 +13,9 @@ Audio samples are uploaded at [github.io](https://anonymous-pits.github.io/pits/
 
 ![overall](asset/overall.png) 
 
+## Onnx Export
+see [onnx_export](onnx_export.ipynb)
+
 ## References
 - Official VITS Implementation: https://github.com/jaywalnut310/vits
 - NANSY Implementation from dhchoi99: https://github.com/dhchoi99/NANSY
