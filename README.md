@@ -5,11 +5,13 @@
 
 **Training** Code will be available soon. Model and etc are uploaded.
 
-**Demo and Checkpoint are uploaded at **[Hugging Face Space](https://huggingface.co/spaces/anonymous-pits/pits)🤗
+**Demo and Checkpoint are uploaded at** [Hugging Face Space](https://huggingface.co/spaces/anonymous-pits/pits)🤗
 
 Audio samples are uploaded at [github.io](https://anonymous-pits.github.io/pits/).
 
+For the pitch-shifted Inference, we unify to use the notation in scope-shift, s, instead of pitch-shift.
 
+Preprint version contains some errors! Please wait for the update!
 
 ![overall](asset/overall.png) 
 
