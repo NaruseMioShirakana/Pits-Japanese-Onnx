@@ -15,23 +15,6 @@ Preprint version contains some errors! Please wait for the update!
 
 ![overall](asset/overall.png) 
 
-If you have done this, set "cleaned_text" to true in config.json
-```sh
-# Mutiple speakers
-python preprocess.py --text_index 2 --filelists path/to/filelist_train.txt path/to/filelist_val.txt
-```
-## Build monotonic alignment search
-```sh
-cd monotonic_align
-python setup.py build_ext --inplace
-cd ..
-```
-## Train
-```sh
-# Mutiple speakers
-python train_ms.py -c <config> -m <folder>
-```
-
 ## Onnx Export
 see [onnx_export](onnx_export.ipynb)
 
