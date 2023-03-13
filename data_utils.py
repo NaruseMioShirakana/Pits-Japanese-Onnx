@@ -8,6 +8,7 @@ import commons
 from mel_processing import spectrogram_torch
 from utils import load_wav_to_torch, load_filepaths_and_text
 from text import text_to_sequence
+from text.symbols import symbols
 from analysis import Pitch
 """ Modified from Multi speaker version of VITS"""
 
@@ -26,12 +27,12 @@ class TextAudioSpeakerLoader(torch.utils.data.Dataset):
         self.filter_length = hparams.filter_length
         self.hop_length = hparams.hop_length
         self.win_length = hparams.win_length
-
+        self.text_cleaners = hparams.text_cleaners
         self.lang = hparams.languages
 
         self.add_blank = hparams.add_blank
-        self.min_text_len = getattr(hparams, "min_text_len", 1)
-        self.max_text_len = getattr(hparams, "max_text_len", 190)
+        self.min_text_len = 1
+        self.max_text_len = 190
 
         self.speaker_dict = {
             speaker: idx
@@ -64,7 +65,7 @@ class TextAudioSpeakerLoader(torch.utils.data.Dataset):
 
         audiopaths_sid_text_new = []
         lengths = []
-        for audiopath, text, spk in self.audiopaths_sid_text:
+        for audiopath, spk, text in self.audiopaths_sid_text:
             if self.min_text_len <= len(text) and len(
                     text) <= self.max_text_len:
                 audiopath = os.path.join(self.data_path, audiopath)
@@ -80,7 +81,7 @@ class TextAudioSpeakerLoader(torch.utils.data.Dataset):
             1], audiopath_sid_text[2]
         text, tone = self.get_text(text)
         spec, ying, wav = self.get_audio(audiopath, pt_run)
-        sid = self.get_sid(self.speaker_dict[spk])
+        sid = torch.LongTensor([int(spk)])
         return (text, spec, ying, wav, sid, tone)
 
     def get_audio(self, filename, pt_run=False):
@@ -116,7 +117,7 @@ class TextAudioSpeakerLoader(torch.utils.data.Dataset):
         return spec, ying, audio_norm
 
     def get_text(self, text):
-        text_norm, tone = text_to_sequence(text, self.lang)
+        text_norm, tone = text_to_sequence(text, symbols, self.text_cleaners)
         if self.add_blank:
             text_norm = commons.intersperse(text_norm, 0)
             tone = commons.intersperse(tone, 0)
