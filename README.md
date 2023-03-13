@@ -15,6 +15,11 @@ Preprint version contains some errors! Please wait for the update!
 
 ![overall](asset/overall.png) 
 
+## Training
+- preprocess.py
+- train.py -c configs/config_en.yaml -m {MODEL_NAME} {-i:if you change yingram setup or etc}
+  
+
 ## Onnx Export
 see [onnx_export](onnx_export.ipynb)
 
