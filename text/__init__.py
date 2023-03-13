@@ -13,8 +13,10 @@ def text_to_sequence(text, symbols, cleaner_names):
   _symbol_to_id = {s: i for i, s in enumerate(symbols)}
 
   sequence = []
-
-  clean_text = _clean_text(text, cleaner_names)
+  if cleaner_names is not None:
+    clean_text = _clean_text(text, cleaner_names)
+  else:
+    clean_text = text
   for symbol in clean_text:
     if symbol not in _symbol_to_id.keys():
       continue
