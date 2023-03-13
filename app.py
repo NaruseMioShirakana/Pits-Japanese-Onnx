@@ -7,13 +7,12 @@ from models import (
     SynthesizerTrn, )
 
 from text.symbols import symbols
-from text import japanese_cleaners
+from text import text_to_sequence, sequence_to_text
 
 # we use Kyubyong/g2p for demo instead of our internal g2p
 # https://github.com/Kyubyong/g2p
 import re
 
-_symbol_to_id = lang_to_dict("en_US")
 
 class GradioApp:
 
@@ -34,14 +33,12 @@ class GradioApp:
         self.interface = self._gradio_interface()
 
     def get_phoneme(self, text):
-        phones = japanese_cleaners(text)
-        tone = [0 for p in phones]
+        text_norm, _ = text_to_sequence(text, symbols, self.hps.data.text_cleaners)
+        tone = [0 for p in text_norm]
+        phones = sequence_to_text(text_norm)
         if self.hps.data.add_blank:
-            text_norm = [_symbol_to_id[symbol] for symbol in phones]
             text_norm = commons.intersperse(text_norm, 0)
             tone = commons.intersperse(tone, 0)
-        else:
-            text_norm = phones
         text_norm = torch.LongTensor(text_norm)
         tone = torch.LongTensor(tone)
         return text_norm, tone, phones
@@ -112,7 +109,7 @@ def parsearg():
     parser.add_argument('-c',
                         '--config',
                         type=str,
-                        default="./configs/config_en.yaml",
+                        default="./configs/config_jp.yaml",
                         help='Path to configuration file')
     parser.add_argument('-m',
                         '--model',
@@ -122,7 +119,7 @@ def parsearg():
     parser.add_argument('-r',
                         '--checkpoint_path',
                         type=str,
-                        default='./logs/pits_vctk_AD_3000.pth',
+                        default='SummerPockets_10.pth',
                         help='Path to checkpoint for resume')
     parser.add_argument('-f',
                         '--force_resume',

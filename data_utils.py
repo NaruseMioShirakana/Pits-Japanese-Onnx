@@ -7,10 +7,24 @@ import torch.utils.data
 import commons
 from mel_processing import spectrogram_torch
 from utils import load_wav_to_torch, load_filepaths_and_text
-from text import cleaned_text_to_sequence
-from text.symbols import symbols
 from analysis import Pitch
 """ Modified from Multi speaker version of VITS"""
+import numpy
+from text.symbols import symbols
+# Mappings from symbol to numeric ID and vice versa:
+_symbol_to_id = {s: i for i, s in enumerate(symbols)}
+
+
+def cleaned_text_to_sequence(cleaned_text):
+  '''Converts a string of text to a sequence of IDs corresponding to the symbols in the text.
+    Args:
+      text: string to convert to a sequence
+    Returns:
+      List of integers corresponding to the symbols in the text
+  '''
+  sequence = [_symbol_to_id[symbol] for symbol in cleaned_text if symbol in _symbol_to_id.keys()]
+  tone = numpy.zeros_like(sequence)
+  return sequence, tone
 
 
 class TextAudioSpeakerLoader(torch.utils.data.Dataset):
