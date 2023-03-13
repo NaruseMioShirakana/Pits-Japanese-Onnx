@@ -7,7 +7,7 @@ import torch.utils.data
 import commons
 from mel_processing import spectrogram_torch
 from utils import load_wav_to_torch, load_filepaths_and_text
-from text import text_to_sequence
+from text import cleaned_text_to_sequence
 from text.symbols import symbols
 from analysis import Pitch
 """ Modified from Multi speaker version of VITS"""
@@ -117,7 +117,7 @@ class TextAudioSpeakerLoader(torch.utils.data.Dataset):
         return spec, ying, audio_norm
 
     def get_text(self, text):
-        text_norm, tone = text_to_sequence(text, symbols, self.text_cleaners)
+        text_norm, tone = cleaned_text_to_sequence(text, symbols, self.text_cleaners)
         if self.add_blank:
             text_norm = commons.intersperse(text_norm, 0)
             tone = commons.intersperse(tone, 0)
