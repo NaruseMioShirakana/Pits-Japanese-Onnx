@@ -2,6 +2,13 @@
 from text import cleaners
 import numpy
 
+from text.symbols import symbols
+
+
+# Mappings from symbol to numeric ID and vice versa:
+_symbol_to_id = {s: i for i, s in enumerate(symbols)}
+_id_to_symbol = {i: s for i, s in enumerate(symbols)}
+
 def text_to_sequence(text, symbols, cleaner_names):
   '''Converts a string of text to a sequence of IDs corresponding to the symbols in the text.
     Args:
@@ -13,10 +20,7 @@ def text_to_sequence(text, symbols, cleaner_names):
   _symbol_to_id = {s: i for i, s in enumerate(symbols)}
 
   sequence = []
-  if cleaner_names is not None:
-    clean_text = _clean_text(text, cleaner_names)
-  else:
-    clean_text = text
+  clean_text = _clean_text(text, cleaner_names)
   for symbol in clean_text:
     if symbol not in _symbol_to_id.keys():
       continue
@@ -25,6 +29,15 @@ def text_to_sequence(text, symbols, cleaner_names):
   tone = numpy.zeros_like(sequence)
   return sequence, tone
 
+def cleaned_text_to_sequence(cleaned_text):
+  '''Converts a string of text to a sequence of IDs corresponding to the symbols in the text.
+    Args:
+      text: string to convert to a sequence
+    Returns:
+      List of integers corresponding to the symbols in the text
+  '''
+  sequence = [_symbol_to_id[symbol] for symbol in cleaned_text if symbol in _symbol_to_id.keys()]
+  return sequence
 
 def _clean_text(text, cleaner_names):
   for name in cleaner_names:
