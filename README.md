@@ -1,3 +1,5 @@
+目前请不要使用该fork训练，请等待过几天的测试结果
+
 # PITS
 **PITS: Variational Pitch Inference without Fundamental Frequency for End-to-End Pitch-controllable TTS**
 
