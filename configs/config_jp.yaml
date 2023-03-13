@@ -1,0 +1,68 @@
+train:
+  log_interval: 200   # step unit
+  eval_interval: 400  # step unit
+  save_interval: 50  # epoch unit: 50 for baseline / 500 for fine-tuning
+  seed: 1234
+  epochs: 7000
+  learning_rate: 2e-4 
+  betas: [0.8, 0.99]
+  eps: 1e-9
+  batch_size: 6
+  fp16_run: True  #False
+  lr_decay: 0.999875
+  segment_size: 8192
+  c_mel: 45
+  c_kl: 1.0
+  c_vq: 1.
+  c_commit: 0.2
+  c_yin: 45.
+  log_path: "S:\\VSGIT\\VC & TTS Python\\Pits-Japanese-Onnx-main\\logs"
+  n_sample: 3
+  alpha: 200
+
+data:
+  data_path: "S:\\VSGIT\\VC & TTS Python\\Pits-Japanese-Onnx-main\\raw"
+  training_files: "filelists/sp_text_train_filelist.txt.cleaned"
+  validation_files: "filelists/sp_text_val_filelist.txt.cleaned"
+  languages: "jp_JP" 
+  text_cleaners: ["japanese_cleaners"]
+  sampling_rate: 22050
+  filter_length: 1024
+  hop_length: 256
+  win_length: 1024
+  n_mel_channels: 80
+  mel_fmin: 0.0
+  mel_fmax: null
+  add_blank: True
+  speakers: ["鳴瀬しろは","空門蒼","鷹原うみ","紬ヴェンダース","神山識","水織静久","野村美希","久島鴎","岬鏡子"]
+  persistent_workers: True
+  midi_start: -5
+  midi_end: 75
+  midis: 80
+  ying_window: 2048
+  ying_hop: 256
+  tau_max: 2048
+  octave_range: 24
+  
+model:
+  inter_channels: 192
+  hidden_channels: 192
+  filter_channels: 768
+  n_heads: 2
+  n_layers: 6
+  kernel_size: 3
+  p_dropout: 0.1
+  resblock: "1"
+  resblock_kernel_sizes: [3,7,11]
+  resblock_dilation_sizes: [[1,3,5], [1,3,5], [1,3,5]]
+  upsample_rates: [8,8,2,2]
+  upsample_initial_channel: 512
+  upsample_kernel_sizes: [16,16,4,4]
+  n_layers_q: 3
+  use_spectral_norm: False
+  gin_channels: 256
+  codebook_size: 320
+  yin_channels: 80
+  yin_start: 15 # scope start bin in nansy = 1.5/8 
+  yin_scope: 50 # scope ratio in nansy = 5/8 
+  yin_shift_range: 15 # same as default start index of yingram
