@@ -1,68 +1,33 @@
 """ from https://github.com/keithito/tacotron """
-import re
-from unicodedata import normalize
+from text import cleaners
+import numpy
 
-from text.cleaners import collapse_whitespace
-from text.symbols import lang_to_dict, lang_to_dict_inverse
-
-
-def text_to_sequence(raw_text, lang):
-    '''Converts a string of text to a sequence of IDs corresponding to the symbols in the text.
+def text_to_sequence(text, symbols, cleaner_names):
+  '''Converts a string of text to a sequence of IDs corresponding to the symbols in the text.
     Args:
-        text: string to convert to a sequence
-        lang: language of the input text
+      text: string to convert to a sequence
+      cleaner_names: names of the cleaner functions to run the text through
     Returns:
-        List of integers corresponding to the symbols in the text
-    '''
+      List of integers corresponding to the symbols in the text
+  '''
+  _symbol_to_id = {s: i for i, s in enumerate(symbols)}
 
-    _symbol_to_id = lang_to_dict(lang)
-    text = collapse_whitespace(raw_text)
+  sequence = []
 
-    if lang == 'ko_KR':    
-        text = normalize('NFKD', text)
-        sequence = [_symbol_to_id[symbol] for symbol in text]
-        tone = [0 for i in sequence]
-
-    elif lang == 'en_US':
-        _curly_re = re.compile(r'(.*?)\{(.+?)\}(.*)')
-        sequence = []
-
-        while len(text):
-            m = _curly_re.match(text)
-
-            if m is not None:
-                ar = m.group(1)
-                sequence += [_symbol_to_id[symbol] for symbol in ar]
-                ar = m.group(2)
-                sequence += [_symbol_to_id[symbol] for symbol in ar.split()]
-                text = m.group(3)
-            else:
-                sequence += [_symbol_to_id[symbol] for symbol in text]
-                break
-
-        tone = [0 for i in sequence]
-
-    else:
-        raise RuntimeError('Wrong type of lang')
-
-    assert len(sequence) == len(tone)
-    return sequence, tone
-
-
-def sequence_to_text(sequence, lang):
-    '''Converts a sequence of IDs back to a string'''
-    _id_to_symbol = lang_to_dict_inverse(lang)
-    result = ''
-    for symbol_id in sequence:
-        s = _id_to_symbol[symbol_id]
-        result += s
-    return result
+  clean_text = _clean_text(text, cleaner_names)
+  for symbol in clean_text:
+    if symbol not in _symbol_to_id.keys():
+      continue
+    symbol_id = _symbol_to_id[symbol]
+    sequence += [symbol_id]
+  tone = numpy.zeros_like(sequence)
+  return sequence, tone
 
 
 def _clean_text(text, cleaner_names):
-    for name in cleaner_names:
-        cleaner = getattr(cleaners, name)
-        if not cleaner:
-            raise Exception('Unknown cleaner: %s' % name)
-        text = cleaner(text)
-    return text
+  for name in cleaner_names:
+    cleaner = getattr(cleaners, name)
+    if not cleaner:
+      raise Exception('Unknown cleaner: %s' % name)
+    text = cleaner(text)
+  return text
