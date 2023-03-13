@@ -2,7 +2,7 @@ import re
 from unidecode import unidecode
 import ctypes
 
-dll = ctypes.cdll.LoadLibrary('cleaners\JapaneseCleaner.dll')
+dll = ctypes.cdll.LoadLibrary('cleaners/JapaneseCleaner.dll')
 dll.CreateOjt.restype = ctypes.c_uint64 
 dll.PluginMain.restype = ctypes.c_uint64 
 floder = ctypes.create_unicode_buffer("cleaners")
