@@ -21,7 +21,7 @@ from models import (
     AvocodoDiscriminator)
 from losses import (generator_loss, discriminator_loss, feature_loss, kl_loss)
 from mel_processing import mel_spectrogram_torch, spec_to_mel_torch
-from text.symbols import symbol_len
+from text.symbols import symbols
 import math
 
 torch.backends.cudnn.benchmark = True
@@ -34,7 +34,7 @@ def main(args):
 
     n_gpus = torch.cuda.device_count()
     os.environ['MASTER_ADDR'] = 'localhost'
-    os.environ['MASTER_PORT'] = '80000'
+    os.environ['MASTER_PORT'] = '114'
 
     hps = utils.get_hparams(args)
     # create spectrogram files
@@ -60,7 +60,7 @@ def run(rank, n_gpus, hps, args):
         utils.check_git_hash(hps.model_dir)
         writer = SummaryWriter(log_dir=hps.model_dir)
 
-    dist.init_process_group(backend='nccl',
+    dist.init_process_group(backend='gloo',
                             init_method='env://',
                             world_size=n_gpus,
                             rank=rank,
@@ -106,7 +106,7 @@ def run(rank, n_gpus, hps, args):
                               persistent_workers=use_persistent_workers,
                               batch_sampler=train_sampler)
 
-    net_g = SynthesizerTrn(symbol_len(hps.data.languages),
+    net_g = SynthesizerTrn(len(symbols),
                            hps.data.filter_length // 2 + 1,
                            hps.train.segment_size // hps.data.hop_length,
                            n_speakers=len(hps.data.speakers),
@@ -565,12 +565,12 @@ if __name__ == "__main__":
     parser.add_argument('-c',
                         '--config',
                         type=str,
-                        default="./configs/default.yaml",
+                        default="./configs/config_jp.yaml",
                         help='Path to configuration file')
     parser.add_argument('-m',
                         '--model',
                         type=str,
-                        required=True,
+                        default="SummerPockets",
                         help='Model name')
     parser.add_argument('-r',
                         '--resume',

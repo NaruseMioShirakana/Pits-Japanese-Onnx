@@ -6,11 +6,11 @@ import utils
 from models import (
     SynthesizerTrn, )
 
-from text.symbols import symbol_len, lang_to_dict
+from text.symbols import symbols
+from text import japanese_cleaners
 
 # we use Kyubyong/g2p for demo instead of our internal g2p
 # https://github.com/Kyubyong/g2p
-from g2p_en import G2p
 import re
 
 _symbol_to_id = lang_to_dict("en_US")
@@ -20,7 +20,7 @@ class GradioApp:
     def __init__(self, args):
         self.hps = utils.get_hparams_from_file(args.config)
         self.device = "cpu"
-        self.net_g = SynthesizerTrn(symbol_len(self.hps.data.languages),
+        self.net_g = SynthesizerTrn(len(symbols),
                                     self.hps.data.filter_length // 2 + 1,
                                     self.hps.train.segment_size //
                                     self.hps.data.hop_length,
@@ -31,11 +31,10 @@ class GradioApp:
                                     **self.hps.model).to(self.device)
         _ = self.net_g.eval()
         _ = utils.load_checkpoint(args.checkpoint_path, model_g=self.net_g)
-        self.g2p = G2p()
         self.interface = self._gradio_interface()
 
     def get_phoneme(self, text):
-        phones = [re.sub("[0-9]", "", p) for p in self.g2p(text)]
+        phones = japanese_cleaners(text)
         tone = [0 for p in phones]
         if self.hps.data.add_blank:
             text_norm = [_symbol_to_id[symbol] for symbol in phones]
