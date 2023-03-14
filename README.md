@@ -1,5 +1,3 @@
-目前请不要使用该fork训练，请等待过几天的测试结果
-
 # PITS
 **PITS: Variational Pitch Inference without Fundamental Frequency for End-to-End Pitch-controllable TTS**
 
@@ -16,6 +14,10 @@ For the pitch-shifted Inference, we unify to use the notation in scope-shift, s,
 Preprint version contains some errors! Please wait for the update!
 
 ![overall](asset/overall.png) 
+
+## Training
+- Use [preprocess.py](preprocess.py) to preprocess your filelist (Windows Only)
+- train.py -c configs/config_en.yaml -m {MODEL_NAME} {-i:if you change yingram setup or etc}
 
 ## Onnx Export
 see [onnx_export](onnx_export.ipynb)
