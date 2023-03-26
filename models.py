@@ -1108,6 +1108,19 @@ class SynthesizerTrn(nn.Module):
               scope_shift, :] for i in x
         ]
 
+    def crop_scope_by_frame(self, x: torch.Tensor, scope_shift_list: torch.Tensor):
+        assert len(scope_shift_list) == x[0].shape[-1]  # the length of scope shift list should match the seq length
+        stacked = []
+        for batch in x:
+            batch = batch.permute(0, 2, 1)  # [B, S, N]
+            batch_stacked = torch.stack([
+                torch.stack([el[self.yin_start + scope_shift:self.yin_start + self.yin_scope + scope_shift]
+                            for scope_shift, el in zip(scope_shift_list, seq)])  # [N, yin_scope]
+                for seq in batch])  # [S, N, yin_scope]
+            batch_stacked = batch_stacked.permute(0, 2, 1)  # [S, yin_scope, N]
+            stacked.append(batch_stacked)
+        return stacked
+
     def crop_scope_tensor(
             self, x,
             scope_shift):  # x: tensor [B,C,T] #scope_shift: tensor [B]
