@@ -13,7 +13,7 @@ import commons
 import opits_modules
 import soundfile
 import modules
-import attentions
+import attentions_onnx
 import commons
 from commons import init_weights, get_padding
 #for Q option
@@ -161,24 +161,21 @@ class TextEncoder(nn.Module):
         self.emb_t = nn.Embedding(6, hidden_channels)
         nn.init.normal_(self.emb_t.weight, 0.0, hidden_channels**-0.5)
 
-        self.encoder = attentions.Encoder(hidden_channels, filter_channels,
+        self.encoder = attentions_onnx.Encoder(hidden_channels, filter_channels,
                                           n_heads, n_layers, kernel_size,
                                           p_dropout)
         self.proj = nn.Conv1d(hidden_channels, out_channels * 2, 1)
 
-    def forward(self, x, t, x_lengths):
-        t_zero = (t == 0)
+    def forward(self, x, t):
+        x_mask = torch.ones_like(x).unsqueeze(0).to(torch.float32)
+
         emb_t = self.emb_t(t)
-        emb_t[t_zero, :] = 0
-        x = (self.emb(x) + emb_t) * math.sqrt(
-            self.hidden_channels)  # [b, t, h]
-        #x = torch.transpose(x, 1, -1)  # [b, h, t]
-        x_mask = torch.unsqueeze(commons.sequence_mask(x_lengths, x.size(1)),
-                                 1).to(x.dtype)
-        #x = self.encoder(x * x_mask, x_mask)
-        x = torch.einsum('btd,but->bdt', x, x_mask)
+        x = (self.emb(x) + emb_t) * math.sqrt(self.hidden_channels)  # [b, t, h]
+
+        x = torch.transpose(x, 1, -1)  # [b, h, t]
         x = self.encoder(x, x_mask)
-        stats = self.proj(x) * x_mask
+
+        stats = self.proj(x)
 
         m, logs = torch.split(stats, self.out_channels, dim=1)
         return x, m, logs, x_mask
@@ -1236,9 +1233,8 @@ class SynthesizerTrn(nn.Module):
         length_scale=1
         noise_scale_w=1.
         scope_shift=0
-        x = torch.LongTensor([[ 0, 30,  0, 37,  0, 49,  0, 20,  0, 37,  0, 58,  0, 20,  0, 29,  0, 31, 0, 42,  0, 45,  0, 20,  0, 47,  0, 33,  0, 39,  0, 20,  0,  4,  0]])
-        t = torch.LongTensor([[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]])
-        x_lengths = torch.LongTensor([35])
+        x = torch.LongTensor([[ 0, 32, 0, 33, 0, 33, 0, 33, 0, 33, 0, 33, 0]])
+        t = torch.LongTensor([[ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]])
         sid = torch.LongTensor([0])
         self.flow.inter_channels = self.inter_channels
         self.flow.yin_channels = self.yin_channels
@@ -1248,9 +1244,9 @@ class SynthesizerTrn(nn.Module):
         if Onnx:
             torch.onnx.export(
                 self.enc_p,
-                (x, t, x_lengths),
+                (x, t),
                 "ONNX_net/Pits_enc_p.onnx",
-                input_names=["x", "t", "x_lengths"],
+                input_names=["x", "t"],
                 output_names=["xout", "m_p", "logs_p", "x_mask"],
                 dynamic_axes={
                 "x" : [1],
@@ -1262,7 +1258,7 @@ class SynthesizerTrn(nn.Module):
                 },
                 verbose=True,
             )
-        x, m_p, logs_p, x_mask = self.enc_p(x, t, x_lengths)
+        x, m_p, logs_p, x_mask = self.enc_p(x, t)
         
         if self.n_speakers > 0:
             if Onnx:
